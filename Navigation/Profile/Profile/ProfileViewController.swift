@@ -42,7 +42,7 @@ class ProfileViewController: UIViewController {
         title = "Posts"
         view.backgroundColor = .white
         navigationController?.tabBarController?.tabBar.isHidden = false
-        
+
         setupLayout()
     }
 }
@@ -94,7 +94,6 @@ extension ProfileViewController: UITableViewDataSource {
         
         return headerView
     }
-    
 }
 
 

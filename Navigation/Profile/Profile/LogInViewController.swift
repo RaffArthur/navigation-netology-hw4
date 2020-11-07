@@ -12,7 +12,6 @@ class LogInViewController: UIViewController {
         let scrollView = UIScrollView()
         scrollView.toAutoLayout()
         scrollView.showsVerticalScrollIndicator = false
-        scrollView.delegate = self
         
         return scrollView
     }()
@@ -221,11 +220,6 @@ class LogInViewController: UIViewController {
 }
 
 // MARK: - Extensions
-extension LogInViewController: UIScrollViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        
-    }
-}
 
 extension LogInViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

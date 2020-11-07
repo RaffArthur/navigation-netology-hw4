@@ -10,6 +10,10 @@ class ProfileHeaderView: UIView {
     
     // MARK: - Properties
     private lazy var photoProfile: UIImageView = {
+        var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(photoSizeChanged))
+        tapGestureRecognizer.delegate = self
+        tapGestureRecognizer.numberOfTapsRequired = 1
+        
         var photoProfile = UIImageView()
         photoProfile.toAutoLayout()
         photoProfile.isUserInteractionEnabled = true
@@ -17,6 +21,7 @@ class ProfileHeaderView: UIView {
         photoProfile.layer.masksToBounds = true
         photoProfile.layer.borderColor = UIColor.white.cgColor
         photoProfile.layer.borderWidth = 3
+        photoProfile.addGestureRecognizer(tapGestureRecognizer)
         
         return photoProfile
     }()
@@ -77,15 +82,35 @@ class ProfileHeaderView: UIView {
         return textfieldProfile
     }()
     private lazy var statusText = String()
-//    private lazy var tapGestureRecognizer = UIGestureRecognizer(target: self, action: #selector(photoSizeChaged))
+    private lazy var closeButton: UIButton = {
+        var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(closedFullScreenPhoto))
+        var button = UIButton()
+        button.sizeToFit()
+        button.setImage(UIImage(systemName: "multiply"), for: button.state)
+        button.tintColor = #colorLiteral(red: 0.1176327839, green: 0.1176561788, blue: 0.117627643, alpha: 0.9985017123).withAlphaComponent(0)
+        button.isUserInteractionEnabled = true
+        button.addGestureRecognizer(tapGestureRecognizer)
+        
+        return button
+    }()
+    private lazy var backgroundForOpenedPhoto: UIView = {
+        var view = UIView()
+        view.frame = UIScreen.main.bounds
+        
+        var blurEffect = UIBlurEffect(style: UIBlurEffect.Style.light)
+        var blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(blurEffectView)
+        
+        return view
+    }()
+    private lazy var photo = UIImageView(image: photoProfile.image)
+
 
     // MARK: - Initis
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
-//        tapGestureRecognizer.delegate = self
-        
-//        photoProfile.addGestureRecognizer(tapGestureRecognizer)
         
         setupLayout()
     }
@@ -96,11 +121,11 @@ class ProfileHeaderView: UIView {
     
     // MARK: - Subviews funcs
     func setupLayout() {
-        addSubview(photoProfile)
         addSubview(nameProfile)
         addSubview(statusBarProfile)
         addSubview(buttonStatusProfile)
         addSubview(textFieldProfile)
+        addSubview(photoProfile)
         
         let constraints = [
             photoProfile.heightAnchor.constraint(equalToConstant: 100),
@@ -148,17 +173,53 @@ class ProfileHeaderView: UIView {
         statusText = textField.text!
     }
     
-    @objc private func photoSizeChaged(_ gestureRecognizer: UIGestureRecognizer) {
-        photoProfile.image = #imageLiteral(resourceName: "photo_11")
-        photoProfile.layer.cornerRadius = 100
-        
-        print("GOG")
+    @objc private func closedFullScreenPhoto() {
+        UIView.animate(withDuration: 0.5,
+                       animations: { [self] in
+                        backgroundForOpenedPhoto.alpha = 0.0
+                        closeButton.alpha = 0.0
+                        photo.alpha = 0.0
+            
+                       }) { [self] _ in
+                        backgroundForOpenedPhoto.isHidden = true
+                        closeButton.isHidden = true
+                        photo.isHidden = true
+                    }
 
+    }
+    
+    @objc private func photoSizeChanged() {
+        UIView.animateKeyframes(withDuration: 0.5, delay: 0, options: []) {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1) { [self] in
+                self.superview?.addSubview(backgroundForOpenedPhoto)
+                
+                closeButton.frame = CGRect(
+                    x: backgroundForOpenedPhoto.bounds.maxX - 32,
+                    y: backgroundForOpenedPhoto.bounds.minY + 16,
+                    width: closeButton.frame.width,
+                    height: closeButton.frame.height)
+                
+                backgroundForOpenedPhoto.addSubview(photo)
+                backgroundForOpenedPhoto.addSubview(closeButton)
+                
+                photo.center = backgroundForOpenedPhoto.center
+                photo.transform = CGAffineTransform(scaleX: 2, y: 2)
+                photo.contentMode = .scaleAspectFill
+                photo.layer.masksToBounds = false
+                photo.layer.cornerRadius = 0
+                photo.layer.borderWidth = 0
+            }
+        } completion: { _ in
+            UIView.animateKeyframes(withDuration: 0.3, delay: 0.5, options: []) { [self] in
+                closeButton.tintColor = #colorLiteral(red: 0.1176327839, green: 0.1176561788, blue: 0.117627643, alpha: 1).withAlphaComponent(0.6)
+            }
+        }
     }
 }
 
-//extension ProfileHeaderView: UIGestureRecognizerDelegate {
-//    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-//        return true
-//    }
-//}
+extension ProfileHeaderView: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        
+        return true
+    }
+}
