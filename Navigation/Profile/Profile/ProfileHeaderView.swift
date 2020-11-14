@@ -181,17 +181,21 @@ class ProfileHeaderView: UIView {
                         photo.alpha = 0.0
             
                        }) { [self] _ in
-                        backgroundForOpenedPhoto.isHidden = true
-                        closeButton.isHidden = true
-                        photo.isHidden = true
+                        backgroundForOpenedPhoto.removeFromSuperview()
+                        closeButton.removeFromSuperview()
+                        photo.removeFromSuperview()
                     }
-
+        
     }
     
     @objc private func photoSizeChanged() {
         UIView.animateKeyframes(withDuration: 0.5, delay: 0, options: []) {
             UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1) { [self] in
-                self.superview?.addSubview(backgroundForOpenedPhoto)
+                addSubview(backgroundForOpenedPhoto)
+                
+                backgroundForOpenedPhoto.alpha = 1
+                closeButton.alpha = 1
+                photo.alpha = 1
                 
                 closeButton.frame = CGRect(
                     x: backgroundForOpenedPhoto.bounds.maxX - 32,
@@ -216,7 +220,7 @@ class ProfileHeaderView: UIView {
         }
     }
 }
-
+// MARK: - Extensions
 extension ProfileHeaderView: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         
